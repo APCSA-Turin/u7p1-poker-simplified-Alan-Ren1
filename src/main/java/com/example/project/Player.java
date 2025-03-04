@@ -1,7 +1,7 @@
 package com.example.project;
 
 import java.util.ArrayList;
-
+import java.util.Collections;
 
 public class Player {
     private ArrayList<Card> hand;
@@ -29,15 +29,12 @@ public class Player {
 
     // Method to evaluate the player's best hand
     public String playHand(ArrayList<Card> communityCards) {
-        // Combine hand and community cards
+        int count = 0;
         allCards.clear();
         allCards.addAll(hand);
         allCards.addAll(communityCards);
-
-        // Sort all cards for easier evaluation
         sortAllCards();
-
-        // Determine the best hand
+    
         if (isRoyalFlush()) return "Royal Flush";
         if (isStraightFlush()) return "Straight Flush";
         if (isFourOfAKind()) return "Four of a Kind";
@@ -47,14 +44,27 @@ public class Player {
         if (isThreeOfAKind()) return "Three of a Kind";
         if (isTwoPair()) return "Two Pair";
         if (isPair()) return "A Pair";
-        if (isHighCard()) return "High Card";
-        return "Nothing";
+        allCards.clear();
+        allCards.addAll(hand);
+        sortAllCards();
+        for (int i = 0; i <communityCards.size(); i++) {
+        if(allCards.get(0).getRankValue() > communityCards.get(i).getRankValue()) {
+            count++;
+        }
+        if (count == 3){
+            return "High Card";
+        }
+        }
+        allCards.clear();
+        allCards.addAll(hand);
+        allCards.addAll(communityCards);
+        sortAllCards();
+        return "Nothing";  
     }
 
     // Method to sort all cards in ascending order
     public void sortAllCards() {
-        allCards.sort((c1, c2) -> Integer.compare(c1.getRankValue(), c2.getRankValue()));
-
+        Collections.sort(allCards, (c1, c2) -> Integer.compare(c1.getRankValue(), c2.getRankValue()));
     }
 
     // Method to calculate the frequency of each rank
@@ -109,12 +119,13 @@ public class Player {
 
     // Methods to check for specific hand rankings
     private boolean isRoyalFlush() {
-        // Check for Royal Flush logic
-        return false; // Placeholder
+        // A Royal Flush is a straight flush from 10 to Ace (value 10 to 14)
+        return isStraightFlush() && allCards.get(4).getRankValue() == 14;
     }
 
     private boolean isStraightFlush() {
-       return false;
+        // A Straight Flush is a flush and a straight at the same time
+        return isFlush() && isStraight();
     }
 
     private boolean isFourOfAKind() {
@@ -136,25 +147,23 @@ public class Player {
     private boolean isFlush() {
         ArrayList<Integer> frequency = findSuitFrequency();
         for (int count : frequency) {
-            if (count >= 5) return true;
+            if (count >= 5) return true; // Need at least 5 cards of the same suit
         }
         return false;
     }
 
     private boolean isStraight() {
-        sortAllCards();
-        int count = 0;
-        for (Card i : allCards) {
-            if(i.getRankValue() == i.getRankValue() + 1) {
-                count++;
+        // Check if all cards are in consecutive order
+        int consecutiveCount = 1;
+        for (int i = 1; i < allCards.size(); i++) {
+            if (allCards.get(i).getRankValue() == allCards.get(i - 1).getRankValue() + 1) {
+                consecutiveCount++;
+            } else if (allCards.get(i).getRankValue() != allCards.get(i - 1).getRankValue()) {
+                consecutiveCount = 1;
+                
             }
         }
-        if (count == 5) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return consecutiveCount >= 5;
     }
 
     private boolean isThreeOfAKind() {
@@ -182,21 +191,16 @@ public class Player {
         return false;
     }
 
-    private boolean isHighCard() {
-        return !allCards.isEmpty();
-    }
 
     public ArrayList<Card> getCards() {
         return allCards;  // Assuming `allCards` is the list holding player’s cards
     }
-    
+
     public void receiveCard(Card card) {
         if (card != null) {
             allCards.add(card);  // Assuming `allCards` is your ArrayList<Card> that holds the player's cards
         }
     }
-    
-    
 
     @Override
     public String toString() {
