@@ -1,24 +1,37 @@
 package com.example.project;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Deck{
-    private ArrayList<Card> cards;
+public class Deck {
+    private ArrayList<Card> cards; // List to hold all the cards in the deck
 
-    public Deck(){
+    /**
+     * Constructor that initializes and shuffles the deck.
+     */
+    public Deck() {
         cards = new ArrayList<>();
-        initializeDeck();
-        shuffleDeck();
+        initializeDeck(); // Populate the deck with 52 cards
+        shuffleDeck();    // Shuffle the deck for randomness
     }
 
-    public ArrayList<Card> getCards(){
+    /**
+     * Retrieves the current list of cards in the deck.
+     * @return The list of cards.
+     */
+    public ArrayList<Card> getCards() {
         return cards;
     }
 
-    public  void initializeDeck(){ //hint.. use the utility class
-        String[] suits = Utility.getSuits();
-        String[] ranks = Utility.getRanks();
+    /**
+     * Initializes the deck with all possible cards (52 in a standard deck).
+     * Uses the Utility class to get available suits and ranks.
+     */
+    public void initializeDeck() {
+        String[] suits = Utility.getSuits(); // Retrieve available suits
+        String[] ranks = Utility.getRanks(); // Retrieve available ranks
 
+        // Create a card for each suit and rank combination
         for (String suit : suits) {
             for (String rank : ranks) {
                 cards.add(new Card(rank, suit));
@@ -26,25 +39,34 @@ public class Deck{
         }
     }
 
-    public  void shuffleDeck(){ //You can use the Collections library or another method. You do not have to create your own shuffle algorithm
+    /**
+     * Shuffles the deck to randomize the order of the cards.
+     */
+    public void shuffleDeck() {
         Collections.shuffle(cards);
     }
 
-    public  Card drawCard(){
+    /**
+     * Draws a card from the top of the deck (removes and returns it).
+     * @return The drawn card, or null if the deck is empty.
+     */
+    public Card drawCard() {
         if (!cards.isEmpty()) {
-            return cards.remove(0); // Remove and return the first card
+            return cards.remove(0); // Remove and return the top card
         }
         return null; // Return null if the deck is empty
     }
+
+
     public Card dealCard() {
         return cards.isEmpty() ? null : cards.remove(0);
     }
 
-    public  boolean isEmpty(){
+    /**
+     * Checks if the deck is empty.
+     * @return True if the deck has no cards left, otherwise false.
+     */
+    public boolean isEmpty() {
         return cards.isEmpty();
     }
-
-   
-
-
 }

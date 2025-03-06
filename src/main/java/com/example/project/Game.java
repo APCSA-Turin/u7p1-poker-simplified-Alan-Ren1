@@ -4,9 +4,17 @@ import java.util.ArrayList;
 
 public class Game {
 
-    // Method to determine the winner
+    /**
+     * Determines the winner between two players based on their best poker hands.
+     * @param p1 The first player.
+     * @param p2 The second player.
+     * @param p1Hand The best hand ranking of player 1.
+     * @param p2Hand The best hand ranking of player 2.
+     * @param communityCards The shared community cards on the table.
+     * @return A string announcing the winner or if it's a tie.
+     */
     public static String determineWinner(Player p1, Player p2, String p1Hand, String p2Hand, ArrayList<Card> communityCards) {
-        // Compare hand rankings
+        // Compare hand rankings numerically
         int p1Rank = getHandRank(p1Hand);
         int p2Rank = getHandRank(p2Hand);
 
@@ -15,7 +23,7 @@ public class Game {
         } else if (p2Rank > p1Rank) {
             return "Player 2 wins!";
         } else {
-            // Tiebreaker: Compare highest cards
+            // Tiebreaker: Compare highest-ranked cards
             ArrayList<Card> p1Cards = new ArrayList<>(p1.getCards());
             p1Cards.addAll(communityCards);
             ArrayList<Card> p2Cards = new ArrayList<>(p2.getCards());
@@ -25,7 +33,7 @@ public class Game {
             sortCardsByRank(p1Cards);
             sortCardsByRank(p2Cards);
 
-            // Compare the highest cards
+            // Compare the highest cards one by one
             for (int i = 0; i < p1Cards.size(); i++) {
                 if (p1Cards.get(i).getRankValue() > p2Cards.get(i).getRankValue()) {
                     return "Player 1 wins!";
@@ -37,7 +45,11 @@ public class Game {
         }
     }
 
-    // Helper method to get the rank of a hand
+    /**
+     * Converts a hand name to a numerical rank for comparison.
+     * @param hand The poker hand name.
+     * @return The numerical rank of the hand (higher is better).
+     */
     private static int getHandRank(String hand) {
         switch (hand) {
             case "Royal Flush": return 10;
@@ -50,16 +62,19 @@ public class Game {
             case "Two Pair": return 3;
             case "One Pair": return 2;
             case "High Card": return 1;
-            default: return 0; // Invalid hand
+            default: return 0; // Invalid or unrecognized hand
         }
     }
 
-    // Helper method to sort cards by rank in descending order
+    /**
+     * Sorts a list of cards in descending order based on their rank.
+     * @param cards The list of cards to be sorted.
+     */
     private static void sortCardsByRank(ArrayList<Card> cards) {
         for (int i = 0; i < cards.size() - 1; i++) {
             for (int j = i + 1; j < cards.size(); j++) {
                 if (cards.get(i).getRankValue() < cards.get(j).getRankValue()) {
-                    // Swap cards
+                    // Swap cards to maintain descending order
                     Card temp = cards.get(i);
                     cards.set(i, cards.get(j));
                     cards.set(j, temp);
@@ -68,13 +83,16 @@ public class Game {
         }
     }
 
-    // Method to simulate the game (not tested, but useful for testing)
+    /**
+     * Simulates a poker game round between two players.
+     * This method creates a deck, deals cards, evaluates hands, and determines the winner.
+     */
     public static void play() {
-        // Initialize deck and shuffle
+        // Initialize deck and shuffle it
         Deck deck = new Deck();
         deck.shuffleDeck();
 
-        // Create players
+        // Create two players
         Player p1 = new Player();
         Player p2 = new Player();
 
@@ -90,11 +108,11 @@ public class Game {
             communityCards.add(deck.dealCard());
         }
 
-        // Evaluate hands (assume `playHand()` is implemented in Player class)
+        // Evaluate the best hand for each player
         String p1Hand = p1.playHand(communityCards);
         String p2Hand = p2.playHand(communityCards);
 
-        // Determine and print the winner
+        // Determine the winner and print the result
         String result = determineWinner(p1, p2, p1Hand, p2Hand, communityCards);
         System.out.println(result);
     }

@@ -4,37 +4,45 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Player {
-    private ArrayList<Card> hand;
-    private ArrayList<Card> allCards; // the current community cards + hand
-    String[] suits = Utility.getSuits();
-    String[] ranks = Utility.getRanks();
+    private ArrayList<Card> hand;  // Stores the player's hand (2 cards in Texas Hold'em)
+    private ArrayList<Card> allCards;  // Stores the player's hand + community cards for evaluation
+    String[] suits = Utility.getSuits(); // Available suits from a utility class
+    String[] ranks = Utility.getRanks(); // Available ranks from a utility class
 
+    // Constructor initializes the hand and allCards lists
     public Player() {
         hand = new ArrayList<>();
         allCards = new ArrayList<>();
     }
 
+    // Getter method for player's hand
     public ArrayList<Card> getHand() {
         return hand;
     }
 
+    // Getter method for all cards (hand + community cards)
     public ArrayList<Card> getAllCards() {
         return allCards;
     }
 
-    // Method to add a card to the player's hand
+    // Adds a card to the player's hand
     public void addCard(Card c) {
         hand.add(c);
     }
 
-    // Method to evaluate the player's best hand
+    /**
+     * Evaluates the player's best poker hand using their cards and community cards.
+     * @param communityCards The shared community cards on the table.
+     * @return A string representing the best possible hand the player can form.
+     */
     public String playHand(ArrayList<Card> communityCards) {
         int count = 0;
         allCards.clear();
-        allCards.addAll(hand);
-        allCards.addAll(communityCards);
-        sortAllCards();
-    
+        allCards.addAll(hand);  // Add player's hand to the list
+        allCards.addAll(communityCards); // Add community cards
+        sortAllCards();  // Sort cards in ascending order
+
+        // Check hand rankings in descending order of strength
         if (isRoyalFlush()) return "Royal Flush";
         if (isStraightFlush()) return "Straight Flush";
         if (isFourOfAKind()) return "Four of a Kind";
@@ -44,17 +52,21 @@ public class Player {
         if (isThreeOfAKind()) return "Three of a Kind";
         if (isTwoPair()) return "Two Pair";
         if (isPair()) return "A Pair";
+
+        // Check for High Card scenario
         allCards.clear();
         allCards.addAll(hand);
         sortAllCards();
-        for (int i = 0; i <communityCards.size(); i++) {
-        if(allCards.get(0).getRankValue() > communityCards.get(i).getRankValue()) {
-            count++;
+        for (int i = 0; i < communityCards.size(); i++) {
+            if (allCards.get(0).getRankValue() > communityCards.get(i).getRankValue()) {
+                count++;
+            }
+            if (count == 3) {
+                return "High Card";
+            }
         }
-        if (count == 3){
-            return "High Card";
-        }
-        }
+
+        // If no valid hand is found, return "Nothing"
         allCards.clear();
         allCards.addAll(hand);
         allCards.addAll(communityCards);
@@ -62,17 +74,24 @@ public class Player {
         return "Nothing";  
     }
 
-    // Method to sort all cards in ascending order
+    // Sorts all the cards in ascending order based on rank value
     public void sortAllCards() {
-        Collections.sort(allCards, (c1, c2) -> Integer.compare(c1.getRankValue(), c2.getRankValue()));
-    }
-
-    // Method to calculate the frequency of each rank
-    public ArrayList<Integer> findRankingFrequency() {
-        ArrayList<Integer> frequency = new ArrayList<>();
-        for (int i = 0; i < ranks.length; i++) {
-            frequency.add(0);
+        for (int i = 0; i < allCards.size() - 1; i++) {
+            for (int j = 0; j < allCards.size() - i - 1; j++) {
+                if (allCards.get(j).getRankValue() > allCards.get(j + 1).getRankValue()) {
+                    // Swap elements
+                    Card temp = allCards.get(j);
+                    allCards.set(j, allCards.get(j + 1));
+                    allCards.set(j + 1, temp);
+                }
+            }
         }
+    }
+    
+
+    // Calculates the frequency of each rank in the player's hand + community cards
+    public ArrayList<Integer> findRankingFrequency() {
+        ArrayList<Integer> frequency = new ArrayList<>(Collections.nCopies(ranks.length, 0));
         for (Card card : allCards) {
             int index = getRankIndex(card.getRank());
             if (index != -1) {
@@ -82,12 +101,9 @@ public class Player {
         return frequency;
     }
 
-    // Method to calculate the frequency of each suit
+    // Calculates the frequency of each suit in the player's hand + community cards
     public ArrayList<Integer> findSuitFrequency() {
-        ArrayList<Integer> frequency = new ArrayList<>();
-        for (int i = 0; i < suits.length; i++) {
-            frequency.add(0);
-        }
+        ArrayList<Integer> frequency = new ArrayList<>(Collections.nCopies(suits.length, 0));
         for (Card card : allCards) {
             int index = getSuitIndex(card.getSuit());
             if (index != -1) {
@@ -97,7 +113,7 @@ public class Player {
         return frequency;
     }
 
-    // Helper method to get the index of a rank
+    // Helper method to find the index of a rank in the ranks array
     private int getRankIndex(String rank) {
         for (int i = 0; i < ranks.length; i++) {
             if (ranks[i].equals(rank)) {
@@ -107,7 +123,7 @@ public class Player {
         return -1; // Rank not found
     }
 
-    // Helper method to get the index of a suit
+    // Helper method to find the index of a suit in the suits array
     private int getSuitIndex(String suit) {
         for (int i = 0; i < suits.length; i++) {
             if (suits[i].equals(suit)) {
@@ -117,91 +133,80 @@ public class Player {
         return -1; // Suit not found
     }
 
-    // Methods to check for specific hand rankings
+    // Determines if the player has a Royal Flush (A, K, Q, J, 10 of the same suit)
     private boolean isRoyalFlush() {
-        // A Royal Flush is a straight flush from 10 to Ace (value 10 to 14)
         return isStraightFlush() && allCards.get(4).getRankValue() == 14;
     }
 
+    // Determines if the player has a Straight Flush (Five consecutive cards of the same suit)
     private boolean isStraightFlush() {
-        // A Straight Flush is a flush and a straight at the same time
         return isFlush() && isStraight();
     }
 
+    // Determines if the player has Four of a Kind
     private boolean isFourOfAKind() {
-        ArrayList<Integer> frequency = findRankingFrequency();
-        return frequency.contains(4);
+        return findRankingFrequency().contains(4);
     }
 
+    // Determines if the player has a Full House (Three of a Kind + One Pair)
     private boolean isFullHouse() {
         ArrayList<Integer> frequency = findRankingFrequency();
-        boolean hasThree = false;
-        boolean hasTwo = false;
-        for (int count : frequency) {
-            if (count == 3) hasThree = true;
-            if (count == 2) hasTwo = true;
-        }
-        return hasThree && hasTwo;
+        return frequency.contains(3) && frequency.contains(2);
     }
 
+    // Determines if the player has a Flush (Five cards of the same suit)
     private boolean isFlush() {
-        ArrayList<Integer> frequency = findSuitFrequency();
-        for (int count : frequency) {
-            if (count >= 5) return true; // Need at least 5 cards of the same suit
+        for (int count : findSuitFrequency()) {
+            if (count >= 5) return true;
         }
         return false;
     }
 
+    // Determines if the player has a Straight (Five consecutive rank values)
     private boolean isStraight() {
-        // Check if all cards are in consecutive order
         int consecutiveCount = 1;
         for (int i = 1; i < allCards.size(); i++) {
             if (allCards.get(i).getRankValue() == allCards.get(i - 1).getRankValue() + 1) {
                 consecutiveCount++;
             } else if (allCards.get(i).getRankValue() != allCards.get(i - 1).getRankValue()) {
                 consecutiveCount = 1;
-                
             }
         }
         return consecutiveCount >= 5;
     }
 
+    // Determines if the player has Three of a Kind
     private boolean isThreeOfAKind() {
-        ArrayList<Integer> frequency = findRankingFrequency();
-        for (int count : frequency) {
-            if (count == 3) return true;
-        }
-        return false;
+        return findRankingFrequency().contains(3);
     }
 
+    // Determines if the player has Two Pairs
     private boolean isTwoPair() {
-        ArrayList<Integer> frequency = findRankingFrequency();
         int pairCount = 0;
-        for (int count : frequency) {
+        for (int count : findRankingFrequency()) {
             if (count == 2) pairCount++;
         }
         return pairCount >= 2;
     }
 
+    // Determines if the player has a Pair
     private boolean isPair() {
-        ArrayList<Integer> frequency = findRankingFrequency();
-        for (int count : frequency) {
-            if (count == 2) return true;
-        }
-        return false;
+        return findRankingFrequency().contains(2);
     }
 
-
+    // Returns all cards in the player's possession (hand + community cards)
     public ArrayList<Card> getCards() {
-        return allCards;  // Assuming `allCards` is the list holding player’s cards
+        return allCards;
     }
 
+    // Adds a new card to the player's list of all cards
     public void receiveCard(Card card) {
         if (card != null) {
-            allCards.add(card);  // Assuming `allCards` is your ArrayList<Card> that holds the player's cards
+            allCards.add(card);
         }
     }
 
+    // Returns a string representation of the player's hand
     @Override
     public String toString() {
         return hand.toString();
