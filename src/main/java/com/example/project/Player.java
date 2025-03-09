@@ -101,17 +101,21 @@ public class Player {
         return frequency;
     }
 
-    // Calculates the frequency of each suit in the player's hand + community cards
-    public ArrayList<Integer> findSuitFrequency() {
-        ArrayList<Integer> frequency = new ArrayList<>(Collections.nCopies(suits.length, 0));
-        for (Card card : allCards) {
-            int index = getSuitIndex(card.getSuit());
-            if (index != -1) {
-                frequency.set(index, frequency.get(index) + 1);
-            }
-        }
-        return frequency;
+// Calculates the frequency of each suit in the player's hand + community cards
+public ArrayList<Integer> findSuitFrequency() {
+    ArrayList<Integer> frequency = new ArrayList<>();
+    // Initialize the ArrayList with zeros
+    for (int i = 0; i < suits.length; i++) {
+        frequency.add(0);
     }
+    for (Card card : allCards) {
+        int index = getSuitIndex(card.getSuit());
+        if (index != -1) {
+            frequency.set(index, frequency.get(index) + 1);
+        }
+    }
+    return frequency;
+}
 
     // Helper method to find the index of a rank in the ranks array
     private int getRankIndex(String rank) {
@@ -145,7 +149,15 @@ public class Player {
 
     // Determines if the player has Four of a Kind
     private boolean isFourOfAKind() {
-        return findRankingFrequency().contains(4);
+        ArrayList<Integer> frequency = findRankingFrequency();
+    
+        for (int count : frequency) {
+            if (count == 4) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     // Determines if the player has a Full House (Three of a Kind + One Pair)
@@ -177,8 +189,17 @@ public class Player {
 
     // Determines if the player has Three of a Kind
     private boolean isThreeOfAKind() {
-        return findRankingFrequency().contains(3);
+    ArrayList<Integer> frequency = findRankingFrequency();
+    
+    for (int count : frequency) {
+        if (count == 3) {
+            return true;
+        }
     }
+    
+    return false;
+}
+
 
     // Determines if the player has Two Pairs
     private boolean isTwoPair() {
@@ -191,8 +212,17 @@ public class Player {
 
     // Determines if the player has a Pair
     private boolean isPair() {
-        return findRankingFrequency().contains(2);
+    ArrayList<Integer> frequency = findRankingFrequency();
+    
+    for (int count : frequency) {
+        if (count == 2) {
+            return true;
+        }
     }
+    
+    return false;
+}
+
 
     // Returns all cards in the player's possession (hand + community cards)
     public ArrayList<Card> getCards() {
